@@ -73,9 +73,6 @@ void Monopoly::RunTurn() {
 
 		//try to run the players turn. An exception will be thrown if they go bankrupt
 		try {
-			
-			if (turn_count == 5)
-				Players::Players[0]->PayBank(1600);
 
 			//if the current player is in jail, ask them if they want to bail out
 			if (currentPlayer->IsInJail()) {
@@ -97,6 +94,9 @@ void Monopoly::RunTurn() {
 				//if they are in jail they will roll the dice and get out if they roll doubles
 				currentPlayer->RunInJailRoutine();
 			}
+
+			// buy houses and hotels
+			currentPlayer->RunBuyBuildingsRoutine();
 
 		}
 		catch (Player* player) {
@@ -171,6 +171,7 @@ void Monopoly::EndSimulation() {
 
 	if (inSimulation) {
 		inSimulation = false;
+		simulator = nullptr;
 		Backup::RestoreBackup();
 		Console::Unlock();
 	}

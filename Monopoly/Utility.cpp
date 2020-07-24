@@ -18,11 +18,6 @@ Utility::Utility(int index, const std::string& name, int price, int mortgage) : 
 
 void Utility::LandOnOwned(Player* const p) {
 
-	if (owner == p) {
-		Console::Write(p->GetDisplayName() + " already owns " + NAME + "\n");
-		return;
-	}
-
 	Roll r = p->DiceRoll();
 
 	int amountToPay = 0;
@@ -35,7 +30,6 @@ void Utility::LandOnOwned(Player* const p) {
 
 	}
 
-	Console::Write(p->NAME + " will pay " + owner->NAME + "$" + itos(amountToPay) + "\n");
 	p->PayPlayer(owner, amountToPay);
 
 }

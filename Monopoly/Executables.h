@@ -3,6 +3,7 @@
 
 class Player;
 class Property;
+class Street;
 
 // an object of this class can perform an action in the game
 // use its Perform Action function to do so
@@ -112,5 +113,31 @@ public:
 	int GetSalePrice();
 	Property* GetProperty();
 	Items ItemType();
+};
+
+class BuyItem : public Executable {
+
+public:
+	enum class Items {
+		HOUSE,
+		HOTEL
+	};
+
+private:
+
+	Player* player;
+	Items item;
+	Street* property;
+	int buyPrice = 0;
+
+public:
+	BuyItem(Player* player, Items item, Street* property);
+	void PerformAction() override;
+	int GetPrice() override;
+	std::string ToString() override;
+
+	Street* GetProperty();
+	Items ItemType();
+
 };
 

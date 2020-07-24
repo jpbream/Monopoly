@@ -17,11 +17,6 @@ Railroad::Railroad(int index, const std::string& name, int price, int mortgage) 
 
 void Railroad::LandOnOwned(Player* const p) {
 
-	if (owner == p) {
-		Console::Write(p->GetDisplayName() + " already owns " + NAME + "\n");
-		return;
-	}
-
 	int numOwned = 0;
 	for (int i = 0; i < NUM_RAILROADS; ++i) {
 		if (Railroads::Railroads[i]->owner == owner) {
@@ -43,7 +38,6 @@ void Railroad::LandOnOwned(Player* const p) {
 		amountToPay = Railroads::Rent_4;
 	}
 
-	Console::Write(p->NAME + " will pay " + owner->NAME + "$" + itos(amountToPay) + "\n");
 	p->PayPlayer(owner, amountToPay);
 
 }

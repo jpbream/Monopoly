@@ -33,9 +33,6 @@
     <ClCompile Include="Bank.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Wallet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Space.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,18 +87,12 @@
     <ClCompile Include="Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DecisionActions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Executables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Player.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Wallet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Bank.h">
@@ -174,9 +165,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Console.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DecisionActions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Executables.h">

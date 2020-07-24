@@ -4,7 +4,6 @@
 #include "Actions.h"
 #include "Console.h"
 #include "CardActions.h"
-#include "DecisionActions.h"
 #include "FreeParking.h"
 #include "Monopoly.h"
 #include "Street.h"
@@ -261,6 +260,67 @@ void Player::RunInJailRoutine()
 	}
 }
 
+void Player::RunBuyBuildingsRoutine()
+{
+	bool canBuyBuildings = false;
+	for ( Property* prop : properties ) {
+		Street* street = dynamic_cast<Street*>(prop);
+		if ( street ) {
+
+			const StreetGroup* group = street->GetNeighborhood();
+			if ( group->QueryOwner() == this ) {
+
+				// if the street does not have a hotel, the player can build
+				if ( street->NumHotels() == 0 )
+					canBuyBuildings = true;
+
+			}
+		}
+	}
+
+	if ( canBuyBuildings ) {
+		Console::Write(NAME + " has the option to buy houses.\n");
+	}
+	else {
+		Console::Write(NAME + " is not able to buy houses at this time.\n");
+		return;
+	}
+
+	if ( Monopoly::InSimulation() ) {
+		BuyBuildingsWhenInSimulation();
+	}
+	else {
+
+	}
+
+}
+
+void Player::BuyBuildingsWhenInSimulation()
+{
+	// want the simulator to be able to buy buildings to see
+	// if buying a property will actually have a benefit for them
+
+	if ( Monopoly::GetSimulator() == this ) {
+
+		std::vector<BuyItem> buyables = ImmediateBuyables();
+		int startCash = AmountMoney();
+
+		for ( BuyItem& buyable : buyables ) {
+
+			buyable.PerformAction();
+
+			// quit if the bot has spent 75% of its money
+			if ( AmountMoney() < (int)(startCash / 4) )
+				return;
+		}
+
+	}
+
+	// other players should not do anything so as to not discourage the simulator
+	// from ever buying a property
+
+}
+
 Executable* Player::QueryWhenInSimulation(Executable* decision1, Executable* decision2) {
 
 	if ( Monopoly::GetSimulator() == this ) {
@@ -474,6 +534,46 @@ std::vector<SellItem> Player::ImmediateSellables()
 	});
 
 	return sellables;
+}
+
+std::vector<BuyItem> Player::ImmediateBuyables()
+{
+	std::vector<BuyItem> buyables;
+	int budget = AmountMoney();
+
+	for ( Property* prop : properties ) {
+		Street* street = dynamic_cast<Street*>(prop);
+		if ( street ) {
+			const StreetGroup* group = street->GetNeighborhood();
+			if ( group->QueryOwner() == this ) {
+
+				if ( street->AddHouse() ) {
+					street->RemoveHouse();
+
+					if ( budget >= group->HOUSE_COST ) {
+						buyables.emplace_back(this, BuyItem::Items::HOUSE, street);
+						budget -= group->HOUSE_COST;
+					}
+				}
+
+				if ( street->AddHotel() ) {
+					street->RemoveHotel();
+
+					if ( budget >= group->HOTEL_COST ) {
+						buyables.emplace_back(this, BuyItem::Items::HOTEL, street);
+						budget -= group->HOTEL_COST;
+					}
+				}
+
+			}
+		}
+	}
+
+	std::sort(buyables.begin(), buyables.end(), [](BuyItem& b1, BuyItem& b2) {
+		return b1.ItemType() < b2.ItemType();
+	});
+
+	return buyables;
 }
 
 bool Player::VerifyPayment(int amount) {

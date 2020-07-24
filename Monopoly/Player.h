@@ -59,6 +59,9 @@ private:
 	// returns amount actually sold
 	int ScroungeCashWhenInSimulation(int requiredAmount);
 
+	// routine to buy buildings if in a simulation
+	void BuyBuildingsWhenInSimulation();
+
 protected:
 
 	//number representing the players willingness to risk/confidence
@@ -90,6 +93,12 @@ protected:
 	// a house imbalance
 	// the sellables are ordered in increasing priority to keep
 	std::vector<SellItem> ImmediateSellables();
+
+	// returns a list of items that can be bought without
+	// causing a house imbalance
+	// the items are sorted so that the best things to
+	// buy are at the front
+	std::vector<BuyItem> ImmediateBuyables();
 
 public:
 
@@ -125,6 +134,9 @@ public:
 
 	// tries to roll doubles and release the player from jail
 	void RunInJailRoutine();
+
+	// gives the player the chance to buy buildings
+	void RunBuyBuildingsRoutine();
 
 	//move to the specified space. CollectGo is whether player should collect 200 if they pass go
 	void MoveTo(int index, bool collectGo);

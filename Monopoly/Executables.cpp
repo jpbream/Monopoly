@@ -158,3 +158,52 @@ SellItem::Items SellItem::ItemType()
 {
 	return item;
 }
+
+
+BuyItem::BuyItem(Player* player, BuyItem::Items item, Street* property)
+	:
+	player(player), item(item), property(property)
+{
+	if ( item == Items::HOUSE ) {
+		buyPrice = property->GetNeighborhood()->HOUSE_COST;
+	}
+	else if ( item == Items::HOTEL ) {
+		buyPrice = property->GetNeighborhood()->HOTEL_COST;
+	}
+}
+void BuyItem::PerformAction()
+{
+	if ( item == Items::HOUSE ) {
+
+		property->AddHouse();
+		player->PayBank(buyPrice);
+	}
+	else if ( item == Items::HOTEL ) {
+
+		property->AddHotel();
+		player->PayBank(buyPrice);
+	}
+}
+int BuyItem::GetPrice()
+{
+	return buyPrice;
+}
+std::string BuyItem::ToString()
+{
+	if ( item == Items::HOUSE ) {
+
+		return "Buy a house on " + property->NAME + " for $" + itos(buyPrice);
+	}
+	else if ( item == Items::HOTEL ) {
+
+		return "Buy a hotel on " + property->NAME + " for $" + itos(buyPrice);
+	}
+}
+Street* BuyItem::GetProperty()
+{
+	return property;
+}
+BuyItem::Items BuyItem::ItemType()
+{
+	return item;
+}
