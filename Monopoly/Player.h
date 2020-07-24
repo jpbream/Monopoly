@@ -40,6 +40,9 @@ private:
 	//number of get out of jail free cards the player has
 	int numGetOutOfJailFree = 0;
 
+	//move forward an amount of spaces. performs the action of the space we land on on the player
+	void Advance(int numSpaces);
+
 	//helper method for the pay player/bank/free parking methods
 	// determines whether the player will need to scrounge for cash to make this payment,
 	// if so, it scrounges for the appropriate amount
@@ -85,6 +88,7 @@ protected:
 
 	// returns a list of items that can be sold without causing
 	// a house imbalance
+	// the sellables are ordered in increasing priority to keep
 	std::vector<SellItem> ImmediateSellables();
 
 public:
@@ -98,19 +102,19 @@ public:
 	// used during backups
 	Player();
 	Player(const Player& other);
-	virtual Player& operator=(const Player& other);
+	Player& operator=(const Player& other);
 
 	//use this constructor to make players that will be playing in the game
 	Player(const std::string& name, const std::string& gamepiece);
-
-	//returns the roll object that was rolled
-	virtual Roll DiceRoll() = 0;
 
 	//player evaluates the decision. returns the decision they choose
 	Executable* Query(Executable* decision1, Executable* decision2);
 
 	//Returns the index of the space the player is currently on
 	int GetCurrentSquare() const;
+
+	//returns the roll object that was rolled
+	virtual Roll DiceRoll() = 0;
 
 	//if player has spent max turns in jail, releases them. otherwise asks them if they want to bail out or use 
 	// get out of jail free card. Returns whether they got out of jail
@@ -119,8 +123,8 @@ public:
 	// rolls the dice and moves the player. performs the action of the space they landed on.
 	void RunRollAndMoveRoutine();
 
-	//move forward an amount of spaces. performs the action of the space we land on on the player
-	void Advance(int numSpaces);
+	// tries to roll doubles and release the player from jail
+	void RunInJailRoutine();
 
 	//move to the specified space. CollectGo is whether player should collect 200 if they pass go
 	void MoveTo(int index, bool collectGo);

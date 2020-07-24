@@ -96,6 +96,9 @@ namespace Backup {
 
 	static void PolySpaceCopy(Space* dest, Space* src)
 	{
+		// figure out which type of space each is and use the respective
+		// assignment operator
+
 		Street* streetSrc = dynamic_cast<Street*>(src);
 		Railroad* railroadSrc = dynamic_cast<Railroad*>(src);
 		Utility* utilitySrc = dynamic_cast<Utility*>(src);
@@ -126,6 +129,9 @@ namespace Backup {
 
 	static void PolyPlayerCopy(Player* dest, Player* src)
 	{
+		// figure out what type of player each is and 
+		// use the correct assigmnent operator
+
 		Person* personSrc = dynamic_cast<Person*>(src);
 		Bot* botSrc = dynamic_cast<Bot*>(src);
 

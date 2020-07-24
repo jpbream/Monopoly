@@ -10,6 +10,8 @@
 // except for debugging purposes.
 namespace Console {
 
+	void SetFontScale(int scale);
+
 	//locks the console. calls to Write will do nothing
 	void Lock();
 

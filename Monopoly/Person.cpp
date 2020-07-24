@@ -80,7 +80,7 @@ int Person::SellHouse(Street* street)
 	if ( street->GetOwner() == this ) {
 		if ( street->RemoveHouse() ) {
 
-			int salePrice = street->GetNeighborhood()->HOUSE_COST * Streets::BUILDING_RESALE_DEPRECIATION;
+			int salePrice = (int)(street->GetNeighborhood()->HOUSE_COST * Streets::BUILDING_RESALE_DEPRECIATION);
 			Console::Write(NAME + " sells a house on " + street->NAME + "\n");
 			Bank::PayPlayer(this, salePrice);
 			return salePrice;
@@ -102,7 +102,7 @@ int Person::SellHotel(Street* street)
 	if ( street->GetOwner() == this ) {
 		if ( street->RemoveHotel() ) {
 
-			int salePrice = street->GetNeighborhood()->HOTEL_COST * Streets::BUILDING_RESALE_DEPRECIATION;
+			int salePrice = (int)(street->GetNeighborhood()->HOTEL_COST * Streets::BUILDING_RESALE_DEPRECIATION);
 			Console::Write(NAME + " sells a hotel on " + street->NAME + "\n");
 			Bank::PayPlayer(this, salePrice);
 			return salePrice;

@@ -12,6 +12,10 @@ void DoNothing::PerformAction()
 {
 	// do nothing
 }
+int DoNothing::GetPrice()
+{
+	return 0;
+}
 std::string DoNothing::ToString()
 {
 	return "Do Nothing";
@@ -24,6 +28,10 @@ void PayJailBail::PerformAction()
 	CardActions::Pay(player, Actions::JAIL_BAIL);
 	player->ReleaseFromJail();
 }
+int PayJailBail::GetPrice()
+{
+	return Actions::JAIL_BAIL;
+}
 std::string PayJailBail::ToString()
 {
 	return "Pay $" + itos(Actions::JAIL_BAIL) + " to get out of jail";
@@ -35,6 +43,10 @@ void GetOutOfJailFree::PerformAction()
 {
 	CardActions::Pay(player, Actions::JAIL_BAIL);
 	player->ReleaseFromJail();
+}
+int GetOutOfJailFree::GetPrice()
+{
+	return 0;
 }
 std::string GetOutOfJailFree::ToString()
 {
@@ -59,6 +71,10 @@ void BuyProperty::PerformAction()
 	// add property to players list
 	player->AddProperty(property);
 }
+int BuyProperty::GetPrice()
+{
+	return property->PRICE;
+}
 Property* BuyProperty::GetProperty()
 {
 	return property;
@@ -75,14 +91,14 @@ SellItem::SellItem(Player* player, SellItem::Items item, Property* property)
 	if ( item == Items::HOUSE ) {
 
 		Street* street = dynamic_cast<Street*>(property);
-		int salePrice = street->GetNeighborhood()->HOUSE_COST * Streets::BUILDING_RESALE_DEPRECIATION;
+		salePrice = (int)(street->GetNeighborhood()->HOUSE_COST * Streets::BUILDING_RESALE_DEPRECIATION);
 	}
 	else if ( item == Items::HOTEL ) {
 		Street* street = dynamic_cast<Street*>(property);
-		int salePrice = street->GetNeighborhood()->HOTEL_COST * Streets::BUILDING_RESALE_DEPRECIATION;
+		salePrice = (int)(street->GetNeighborhood()->HOTEL_COST * Streets::BUILDING_RESALE_DEPRECIATION);
 	}
 	else if ( item == Items::PROPERTY ) {
-		int salePrice = property->MORTGAGE;
+		salePrice = property->MORTGAGE;
 	}
 }
 void SellItem::PerformAction()
@@ -109,6 +125,10 @@ void SellItem::PerformAction()
 		Bank::PayPlayer(player, salePrice);
 	}
 }
+int SellItem::GetPrice()
+{
+	return -salePrice;
+}
 std::string SellItem::ToString()
 {
 	if ( item == Items::HOUSE ) {
@@ -129,4 +149,12 @@ std::string SellItem::ToString()
 int SellItem::GetSalePrice()
 {
 	return salePrice;
+}
+Property* SellItem::GetProperty()
+{
+	return property;
+}
+SellItem::Items SellItem::ItemType()
+{
+	return item;
 }

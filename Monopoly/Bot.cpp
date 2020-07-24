@@ -78,18 +78,6 @@ Executable* Bot::QueryImplementation(Executable* decision1, Executable* decision
 	else {
 		return decision2;
 	}
-	
-	Console::IncreaseIndent();
-	Console::Write(NAME + " predicts an average net worth of $" + itos(netWorth1) + " if it chooses option 1.\n");
-	Console::Write(NAME + " predicts an average net worth of $" + itos(netWorth2) + " if it chooses option 2.\n");
-	Console::DecreaseIndent();
-
-	if ( netWorth1 > netWorth2 ) {
-		return decision1;
-	}
-	else {
-		return decision2;
-	}
 
 }
 
@@ -100,12 +88,16 @@ int Bot::SimulateTurns(int numGames, int turnsAhead, Executable* decision) {
 
 	//run once to make sure the decision doesn't immediatly bankrupt the bot
 	try {
-		Monopoly::StartSimulation();
+		Monopoly::StartSimulation(this);
 		decision->PerformAction();
 	}
 	catch (Player* player) {
+		int netWorth = player->CalculateNetWorth();
+
+		// this will restore the backup
 		Monopoly::EndSimulation();
-		return 0;
+
+		return netWorth;
 	}
 	Monopoly::EndSimulation();
 
@@ -113,9 +105,9 @@ int Bot::SimulateTurns(int numGames, int turnsAhead, Executable* decision) {
 	int totalNetWorth = 0;
 
 	//do this many times to get a good average
-	for (int i = 0; i < numGames; ++i) {
+	for (int i = 0; i < numGames && InGame(); ++i) {
 
-		Monopoly::StartSimulation();
+		Monopoly::StartSimulation(this);
 		decision->PerformAction();
 
 		//run the desired amount of turns ahead
@@ -134,5 +126,36 @@ int Bot::SimulateTurns(int numGames, int turnsAhead, Executable* decision) {
 
 int Bot::ScroungeCashImplementation(int requiredAmount)
 {
-	return 0;
+	int amountSold = 0;
+	std::vector<SellItem> itemsToSell = ImmediateSellables();
+
+	// loop while there are still things left, sell 1 item at a time
+	while ( amountSold < requiredAmount && itemsToSell.size() > 0 ) {
+
+		// find the item that causes the least damage to sell
+		SellItem* bestToSell = &itemsToSell[0];
+
+		for ( SellItem& item : itemsToSell ) {
+		
+			// safe to call because we know we are not currently in a simulation
+			bestToSell = (SellItem*)QueryImplementation(bestToSell, &item);
+		}
+
+		if ( bestToSell->ItemType() == SellItem::Items::PROPERTY) {
+			Console::Write(NAME + " mortgages " + bestToSell->GetProperty()->NAME + "\n");
+		}
+		else if ( bestToSell->ItemType() == SellItem::Items::HOTEL ) {
+			Console::Write(NAME + " sells a hotel on " + bestToSell->GetProperty()->NAME + "\n");
+		}
+		else if ( bestToSell->ItemType() == SellItem::Items::HOUSE ) {
+			Console::Write(NAME + " sells a house on " + bestToSell->GetProperty()->NAME + "\n");
+		}
+
+		amountSold += bestToSell->GetSalePrice();
+		bestToSell->PerformAction();
+
+		itemsToSell = ImmediateSellables();
+	}
+
+	return amountSold;
 }

@@ -8,6 +8,7 @@
 
 int main() {
 
+	Console::SetFontScale(1);
 	Console::Write("Hello! Press Enter to begin\n");
 	Console::Pause();
 

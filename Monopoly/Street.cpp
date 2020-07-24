@@ -137,12 +137,6 @@ bool Street::RemoveHotel()
 
 void Street::LandOnOwned(Player* p) {
 
-	//check if p already owns this street, if so do nothing
-	if (owner == p) {
-		Console::Write(p->GetDisplayName() + " already owns " + NAME + "\n");
-		return;
-	}
-
 	//check if one person owns all streets in the neighborhood
 	bool allSame = (GetNeighborhood()->QueryOwner() != nullptr);
 

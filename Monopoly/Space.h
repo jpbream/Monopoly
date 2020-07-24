@@ -17,7 +17,7 @@ public:
 
 	Space();
 	Space(const Space& other);
-	virtual Space& operator=(const Space& other);
+	Space& operator=(const Space& other);
 
 	Space(int index, const std::string& name);
 

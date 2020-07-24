@@ -9,6 +9,7 @@
 #include "Monopoly.h"
 #include "Street.h"
 #include "Streets.h"
+#include <algorithm>
 
 Player::Player() : NAME(""), GAMEPIECE("")
 {	
@@ -79,7 +80,7 @@ void Player::Advance(int numSpaces) {
 	currentSquare = (currentSquare + numSpaces) % NUM_SPACES;
 
 	//check if the player passes go but does not land on it
-	// landing on go is handled by another part of the program
+	// landing on go will be handled by the Go spaces LandOn override
 	if (currentSquare != 0 && currentSquare < prevSquare) {
 		Console::Write(GetDisplayName() + " passed go!\n");
 		Actions::PassGo(this);
@@ -148,9 +149,9 @@ bool Player::RunBailOutRoutine() {
 			DoNothing doNothing;
 
 			Console::Write(NAME + " may pay the fee to get out of jail.\n");
-			bool wantToPay = Query(&pay, &doNothing);
+			Executable* wantToPay = Query(&pay, &doNothing);
 
-			if (wantToPay) {
+			if (wantToPay == &pay) {
 				
 				// perform the action
 				pay.PerformAction();
@@ -195,6 +196,10 @@ void Player::RunRollAndMoveRoutine()
 		//run the actions for the roll
 		Advance(roll.total);
 
+		// if that roll put them in jail, exit here
+		if ( IsInJail() )
+			return;
+
 		//if they rolled doubles
 		if ( roll.doubles ) {
 			numDoubles++;
@@ -225,10 +230,51 @@ void Player::RunRollAndMoveRoutine()
 	}
 }
 
+void Player::RunInJailRoutine()
+{
+	//player doesnt get to do anything if they just got put in jail
+	if ( TurnsInJail() > 0 ) {
+
+		Console::Write(GetDisplayName() + " will try to roll doubles to get out of jail.\n");
+
+		//try to roll doubles
+		Roll roll = DiceRoll();
+
+		//the player spending the max turns in jail is handled by the
+		// player->QueryBailOut method
+
+		if ( roll.doubles ) {
+
+			Console::Write(GetDisplayName() + " has rolled doubles and is free from jail.\n");
+			ReleaseFromJail();
+
+			//they get to move by the doubles they just rolled
+			Advance(roll.total);
+
+		}
+		else {
+
+			//they stay in jail
+			Console::Write(GetDisplayName() + " has failed to roll doubles and remains in jail.\n");
+
+		}
+	}
+}
+
 Executable* Player::QueryWhenInSimulation(Executable* decision1, Executable* decision2) {
 
+	if ( Monopoly::GetSimulator() == this ) {
+		return decision2;
+	}
+	else {
 
-	return decision1;
+		// other players should choose the options that does less
+		// we want the bot simulating to see the effects of its action alone
+		if ( decision1->GetPrice() < decision2->GetPrice() )
+			return decision1;
+		return decision2;
+
+	}
 }
 
 Executable* Player::Query(Executable* decision1, Executable* decision2)
@@ -249,7 +295,7 @@ Executable* Player::Query(Executable* decision1, Executable* decision2)
 	if ( chosen == decision1 ) {
 		Console::Write(NAME + " has chosen Option 1.\n");
 	}
-	else {
+	else if (chosen == decision2) {
 		Console::Write(NAME + " has chosen Option 2.\n");
 	}
 
@@ -291,7 +337,26 @@ bool Player::ScroungeCash(int amount)
 
 int Player::ScroungeCashWhenInSimulation(int requiredAmount)
 {
-	return 0;
+
+	int amountSold = 0;
+	std::vector<SellItem> itemsToSell = ImmediateSellables();
+
+	// loop while there are still things left, sell 1 item at a time
+	while ( amountSold < requiredAmount && itemsToSell.size() > 0 ) {
+
+		for ( SellItem& item : itemsToSell ) {
+
+			amountSold += item.GetSalePrice();
+			item.PerformAction();
+			if ( amountSold >= requiredAmount )
+				break;
+
+		}
+
+		itemsToSell = ImmediateSellables();
+	}
+
+	return amountSold;
 }
 
 int Player::AllSellables(bool print) const
@@ -309,7 +374,7 @@ int Player::AllSellables(bool print) const
 			Console::IncreaseIndent();
 			if ( street->NumHouses() > 0 ) {
 
-				int houseSell = street->GetNeighborhood()->HOUSE_COST * Streets::BUILDING_RESALE_DEPRECIATION;
+				int houseSell = (int)(street->GetNeighborhood()->HOUSE_COST * Streets::BUILDING_RESALE_DEPRECIATION);
 				if ( print )
 					Console::Write(itos(street->NumHouses()) + " houses on " + street->NAME + " for $" + itos(houseSell) + " each.");
 
@@ -317,7 +382,7 @@ int Player::AllSellables(bool print) const
 			}
 
 			if ( street->NumHotels() > 0 ) {
-				int hotelSell = street->GetNeighborhood()->HOTEL_COST * Streets::BUILDING_RESALE_DEPRECIATION;
+				int hotelSell = (int)(street->GetNeighborhood()->HOTEL_COST * Streets::BUILDING_RESALE_DEPRECIATION);
 				if ( print )
 					Console::Write(itos(street->NumHouses()) + " hotel on " + street->NAME + " for $" + itos(hotelSell) + " each.");
 
@@ -372,6 +437,42 @@ std::vector<SellItem> Player::ImmediateSellables()
 		}
 
 	}
+
+	// sort the sellables by priority, lower items will be sold first
+	std::sort(sellables.begin(), sellables.end(), [](SellItem& s1, SellItem& s2) {
+
+		if ( s1.ItemType() != s2.ItemType() ) {
+			return s1.ItemType() < s2.ItemType();
+		}
+
+		if ( s1.ItemType() == SellItem::Items::PROPERTY ) {
+
+			// sell properties not part of a complete set first
+			if ( dynamic_cast<Street*>(s1.GetProperty()) ) {
+
+				Street* s1Street = dynamic_cast<Street*>(s1.GetProperty());
+				Street* s2Street = dynamic_cast<Street*>(s2.GetProperty());
+				if ( !s2Street )
+					return false;
+
+				bool s1Complete = s1Street->GetNeighborhood()->QueryOwner();
+				bool s2Complete = s2Street->GetNeighborhood()->QueryOwner();
+
+				if ( s1Complete && !s2Complete )
+					return false;
+				else
+					return true;
+
+			}
+
+			// if s1 is not a street, put it towards the front
+			return true;
+			
+		}
+
+		return false;
+	});
+
 	return sellables;
 }
 
@@ -515,8 +616,8 @@ int Player::CalculateNetWorth() const {
 		Street* s = dynamic_cast<Street*>(p);
 		if ( s ) {
 
-			netWorth += s->NumHouses() * s->GetNeighborhood()->HOUSE_COST * Streets::BUILDING_RESALE_DEPRECIATION;
-			netWorth += s->NumHotels() * s->GetNeighborhood()->HOTEL_COST * Streets::BUILDING_RESALE_DEPRECIATION;
+			netWorth += (int)(s->NumHouses() * s->GetNeighborhood()->HOUSE_COST * Streets::BUILDING_RESALE_DEPRECIATION);
+			netWorth += (int)(s->NumHotels() * s->GetNeighborhood()->HOTEL_COST * Streets::BUILDING_RESALE_DEPRECIATION);
 		}
 	}
 
@@ -548,7 +649,7 @@ void Player::AddProperty(Property* prop)
 void Player::RemoveProperty(Property* prop)
 {
 	
-	for ( int i = 0; i < properties.size(); ++i ) {
+	for ( unsigned int i = 0; i < properties.size(); ++i ) {
 		if ( properties[i] == prop ) {
 			properties.erase(properties.begin() + i);
 			return;

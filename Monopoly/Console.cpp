@@ -1,7 +1,11 @@
 #include "Console.h"
 #include <algorithm>
+#include <Windows.h>
 
+#undef max
 #define INDENT "     "
+
+#define MAX_ROW 10
 
 namespace Console {
 
@@ -13,6 +17,41 @@ namespace Console {
 
 	//the last character previously written to the screen
 	static char lastChar = '\n';
+
+	static HANDLE stdCout = GetStdHandle(STD_OUTPUT_HANDLE);
+	int numRows = 0;
+
+	static void Scroll()
+	{
+		numRows++;
+
+		CONSOLE_SCREEN_BUFFER_INFO sbInfo;
+		SMALL_RECT rect;
+		GetConsoleScreenBufferInfo(stdCout, &sbInfo);
+
+		int height = sbInfo.srWindow.Bottom - sbInfo.srWindow.Top;
+		int rowToScroll = sbInfo.srWindow.Top + (height / 3);
+
+		if ( numRows > rowToScroll ) {
+			rect.Top = numRows - rowToScroll;
+			rect.Bottom = numRows - rowToScroll;
+			rect.Left = 0;
+			rect.Right = 0;
+
+			SetConsoleWindowInfo(stdCout, FALSE, &rect);
+		}
+	}
+
+	void SetFontScale(int scale)
+	{
+		PCONSOLE_FONT_INFOEX font = new CONSOLE_FONT_INFOEX();
+		font->cbSize = sizeof(CONSOLE_FONT_INFOEX);
+		GetCurrentConsoleFontEx(stdCout, 0, font);
+		font->dwFontSize.X = 10 * scale;
+		font->dwFontSize.Y = 18 * scale;
+		SetCurrentConsoleFontEx(stdCout, 0, font);
+		delete font;
+	}
 
 	void Lock() {
 		locked = true;
@@ -58,6 +97,9 @@ namespace Console {
 
 			//store the last character entered
 			lastChar = message[message.length() - 1];
+
+			if ( lastChar == '\n' )
+				Scroll();
 		}
 		
 	}
@@ -67,6 +109,7 @@ namespace Console {
 		if ( !locked ) {
 			std::getline(std::cin, line);
 			lastChar = '\n';
+			Scroll();
 		}
 	}
 

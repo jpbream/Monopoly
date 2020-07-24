@@ -3,6 +3,8 @@
 
 //the functions that action spaces point to
 // are called by the action spaces LandOn override
+// each function can be thought of as a subclass of the Action
+// space class.
 namespace Actions {
 
 	//number of doubles needed to roll in a row to get thrown in jail

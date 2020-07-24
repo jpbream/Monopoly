@@ -328,40 +328,7 @@ void Actions::FreeParking(Player* const player) {
 
 void Actions::Jail(Player* const player) {
 
-	//if the player is jailed
-	if (player->IsInJail()) {
-
-		//player doesnt get to do anything if they just got put in jail
-		if (player->TurnsInJail() > 0) {
-
-			Console::Write(player->GetDisplayName() + " will try to roll doubles to get out of jail.\n");
-
-			//try to roll doubles
-			Roll roll = player->DiceRoll();
-
-			//the player spending the max turns in jail is handled by the
-			// player->QueryBailOut method
-
-			if (roll.doubles) {
-
-				Console::Write(player->GetDisplayName() + " has rolled doubles and is free from jail.\n");
-				player->ReleaseFromJail();
-
-				//they get to move by the doubles they just rolled
-				player->Advance(roll.total);
-
-			}
-			else {
-
-				//they stay in jail
-				Console::Write(player->GetDisplayName() + " has failed to roll doubles and remains in jail.\n");
-
-			}
-		}
-
-	}
-	else {
-		//otherwise they are just visiting
+	if (!player->IsInJail()) {
 		Console::Write(player->GetDisplayName() + " is just visiting jail.\n");
 	}
 

@@ -1,5 +1,7 @@
 #pragma once
 
+class Player;
+
 //functions and variables related to the game in general
 namespace Monopoly {
 
@@ -45,7 +47,10 @@ namespace Monopoly {
 	void InputSettings();
 
 	//indicates that a simulation is currently running. makes a backup and locks the console.
-	void StartSimulation();
+	void StartSimulation(Player* simulator);
+
+	// returns the player who is running the current simulation, or null if there is no simulation
+	Player* GetSimulator();
 
 	//indicates that a simulation is not running. restores backup and unlocks the console
 	void EndSimulation();

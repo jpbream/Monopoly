@@ -24,7 +24,7 @@ public:
 	// used during backup
 	Bot();
 	Bot(const Bot& other);
-	virtual Bot& operator=(const Bot& other);
+	Bot& operator=(const Bot& other);
 
 	Bot(const std::string& name, const std::string& gamepiece);
 

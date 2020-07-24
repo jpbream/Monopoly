@@ -23,6 +23,11 @@ private:
 	//struct that holds the other streets the same color as this street, and the price to build houses and hotels on these streets
 	const StreetGroup* neighborhood;
 
+protected:
+
+	//action to take when a player lands on this space and it is owned by another player
+	void LandOnOwned(Player* const p) override;
+
 public:
 
 	//fee for landing on this property
@@ -80,13 +85,10 @@ public:
 
 	Street();
 	Street(const Street& other);
-	virtual Street& operator=(const Street& other);
+	Street& operator=(const Street& other);
 
 	Street(int index, const std::string& name, const StreetGroup* const neighborhood, int price, int rent, int rent_full_street,
 			int rent_1house, int rent_2house, int rent_3house, int rent_4house, int rent_hotel, int mortgage);
-
-	//action to take when a player lands on this space
-	void LandOnOwned(Player* const p) override;
 	
 };
 

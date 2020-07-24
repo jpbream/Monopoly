@@ -46,7 +46,6 @@ void Property::LandOn(Player* const p) {
 		BuyProperty buyThis(p, this);
 		DoNothing doNothing;
 		Executable* response = p->Query(&buyThis, &doNothing);
-		
 
 		//they said yes
 		if (response == &buyThis) {
@@ -74,6 +73,11 @@ void Property::LandOn(Player* const p) {
 			doNothing.PerformAction();
 		}
 
+	}
+	else if ( owner == p ) {
+		
+		// if p already owns this street, if so do nothing
+		Console::Write(p->GetDisplayName() + " already owns " + NAME + "\n");
 	}
 	else {
 		//if someone owns the property

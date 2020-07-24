@@ -13,6 +13,9 @@ public:
 	// performs the action of this executable
 	virtual void PerformAction() = 0;
 
+	// return the monetary cost of performing this action
+	virtual int GetPrice() = 0;
+
 	// prints out what this executable will do
 	// used to display to human players what their options are
 	virtual std::string ToString() = 0;
@@ -24,6 +27,7 @@ class DoNothing : public Executable {
 
 public:
 	void PerformAction() override;
+	int GetPrice() override;
 	std::string ToString() override;
 };
 
@@ -36,6 +40,7 @@ private:
 public:
 	PayJailBail(Player* player);
 	void PerformAction() override;
+	int GetPrice() override;
 	std::string ToString() override;
 };
 
@@ -48,6 +53,7 @@ private:
 public:
 	GetOutOfJailFree(Player* player);
 	void PerformAction() override;
+	int GetPrice() override;
 	std::string ToString() override;
 
 };
@@ -62,6 +68,7 @@ private:
 public:
 	BuyProperty(Player* player, Property* property);
 	void PerformAction() override;
+	int GetPrice() override;
 	std::string ToString() override;
 
 	Property* GetProperty();
@@ -73,24 +80,37 @@ class SellItem : public Executable {
 
 public:
 	enum class Items {
-		HOUSE,
+		PROPERTY,
 		HOTEL,
-		PROPERTY
+		HOUSE
 	};
 
 private:
+
+	// player who will be selling an item
 	Player* player;
+
+	// type of item that is being sold
 	Items item;
+
+	// the property that the sale is occuring on
 	Property* property;
 
-	int salePrice;
+	// how much the sale is for
+	int salePrice = 0;
 
 public:
 
 	SellItem(Player* player, Items item, Property* property);
 	void PerformAction() override;
+
+	// returns the negative of how much the item sold for
+	int GetPrice() override;
 	std::string ToString() override;
 
+	// return how much the item sold for
 	int GetSalePrice();
+	Property* GetProperty();
+	Items ItemType();
 };
 

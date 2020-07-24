@@ -43,7 +43,7 @@ public:
 	// used to hold a copy of a person during a backup
 	Person();
 	Person(const Person& other);
-	virtual Person& operator=(const Person& other);
+	Person& operator=(const Person& other);
 
 	Person(const std::string& name, const std::string& gamepiece);
 

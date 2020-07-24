@@ -19,6 +19,7 @@ bool Monopoly::bots_auto_roll = false;
 int Monopoly::turn_count = 0;
 
 static bool inSimulation = false;
+static Player* simulator = nullptr;
 
 void Monopoly::Init() {
 
@@ -73,6 +74,9 @@ void Monopoly::RunTurn() {
 		//try to run the players turn. An exception will be thrown if they go bankrupt
 		try {
 			
+			if (turn_count == 5)
+				Players::Players[0]->PayBank(1600);
+
 			//if the current player is in jail, ask them if they want to bail out
 			if (currentPlayer->IsInJail()) {
 
@@ -91,7 +95,7 @@ void Monopoly::RunTurn() {
 			else {
 
 				//if they are in jail they will roll the dice and get out if they roll doubles
-				Actions::Jail(currentPlayer);
+				currentPlayer->RunInJailRoutine();
 			}
 
 		}
@@ -136,7 +140,7 @@ bool Monopoly::ResolveGame() {
 	//if there is only one player left in the game, end the game and display his stats
 	if (playersInGame == WIN_CONDITION) {
 
-		if (playerIndex > 0) {
+		if (playerIndex >= 0) {
 			Console::Write(Players::Players[playerIndex]->GetDisplayName() + " has won the game with a net worth of $" +
 				itos(Players::Players[playerIndex]->CalculateNetWorth()) + "\n");
 		}
@@ -146,14 +150,21 @@ bool Monopoly::ResolveGame() {
 	return false;
 }
 
-void Monopoly::StartSimulation() {
+void Monopoly::StartSimulation(Player* p) {
 
 	if (!inSimulation) {
 		inSimulation = true;
+		simulator = p;
+
 		Backup::MakeBackup();
 		Console::Lock();
 	}
 
+}
+
+Player* Monopoly::GetSimulator()
+{
+	return simulator;
 }
 
 void Monopoly::EndSimulation() {

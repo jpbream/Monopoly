@@ -15,6 +15,9 @@ protected:
 	//whether or not the property is mortgaged
 	bool mortgaged = false;
 
+	//the action to take when p lands on this space when it is already owned by another player, is called by LandOn
+	virtual void LandOnOwned(Player* const p) = 0;
+
 public:
 
 	//enum for the type that this property is
@@ -31,7 +34,7 @@ public:
 
 	Property();
 	Property(const Property& other);
-	virtual Property& operator=(const Property& other);
+	Property& operator=(const Property& other);
 
 	Property(int index, const std::string& name, int price, int mortgage);
 
@@ -50,7 +53,5 @@ public:
 	//the action to take when p lands on this space
 	void LandOn(Player* const p) override;
 
-	//the action to take when p lands on this space when it is already owned by another player, is called by LandOn
-	virtual void LandOnOwned(Player* const p) = 0;
 };
 
